@@ -525,12 +525,79 @@
         </div>
       </div>
 
-      <!-- PLACEHOLDER — EPIC Lab -->
-      <div class="project-card-placeholder">
-        <div class="placeholder-icon">⚙</div>
-        <div class="placeholder-text">
-          <strong>EPIC Lab — Fabrication Work</strong>
-          <p>Coming soon — CNC, waterjet, and wire EDM projects from the Engineering Product Innovation Center.</p>
+      <!-- PROJECT 2: D-Shaft Coupler -->
+      <div class="project-card">
+        <img
+          class="project-img"
+          src="dshaft_coupler.jpg"
+          alt="D-shaft coupler machined on the wire EDM at BU's EPIC lab"
+        />
+        <div class="project-body">
+          <p class="project-meta">EPIC Lab · Summer 2026</p>
+          <h2 class="project-title">D-Shaft Coupler for ME359</h2>
+          <p class="project-desc">
+            Designed and machined a D-shaft coupler for an electric motor, built for ME359 — a
+            new course being developed at BU after seniors were reaching capstone without knowing
+            how to fabricate their own prototypes. The course has students design, build, and test
+            a full transmission against a professor's target, with only the housing and motor held
+            constant.
+          </p>
+          <div class="project-tags">
+            <span class="tag">Wire EDM</span>
+            <span class="tag">Onshape CAD</span>
+            <span class="tag">Transition fit</span>
+            <span class="tag">Precision tolerancing</span>
+          </div>
+          <div class="project-learned">
+            <p class="learned-label">What I learned</p>
+            <p class="learned-text">
+              The coupler needed a transition fit tight enough to slide onto the motor shaft
+              without play, but I hadn't taken any coursework on fit tolerances yet. I researched
+              transition fits on my own, designed the part in Onshape, and added a 0.003" offset
+              to get it right. I also had a single day to finish it on the wire EDM — one of the
+              most advanced machines in the shop — which meant making a real call under pressure
+              about how to approach the cut, and how to work through a disagreement with a
+              coworker about the best way to get there.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- PROJECT 3: HIP - Hybrid Intro Project -->
+      <div class="project-card">
+        <img
+          class="project-img"
+          src="hip_nozzle_adapter.jpg"
+          alt="Nozzle-to-chamber adapter assembly for BURPG's Hybrid Intro Project"
+        />
+        <div class="project-body">
+          <p class="project-meta">BURPG · In Progress — Fall 2026</p>
+          <h2 class="project-title">Hybrid Intro Project (HIP) — Rocket Nozzle & Test Computer</h2>
+          <p class="project-desc">
+            Designing a rocket engine nozzle to spec and building the electronics test computer
+            that fires it, as part of BURPG's intro pipeline. The nozzle has to interface with a
+            fixed aluminum adapter and chamber using a 220-size O-ring seal and a 1" NPT
+            connection, sized against real design parameters — chamber pressure, mass flow rate,
+            and combustion gas properties — rather than arbitrary numbers.
+          </p>
+          <div class="project-tags">
+            <span class="tag">SolidWorks</span>
+            <span class="tag">FEA</span>
+            <span class="tag">Nozzle Design</span>
+            <span class="tag">Arduino</span>
+            <span class="tag">Instrumentation</span>
+            <span class="tag">O-Ring Sealing</span>
+          </div>
+          <div class="project-learned">
+            <p class="learned-label">Where it stands</p>
+            <p class="learned-text">
+              Currently in the design review phase, working through nozzle calculations
+              (specific impulse, thrust, exit velocity, area ratio) and drafting the CAD to mate
+              with the fixed adapter geometry. The test computer side needs to read a load cell,
+              fire an EMatch, and control a solenoid — all through a microcontroller I'm building
+              from scratch. Full FEA validation and test firing come later in the semester.
+            </p>
+          </div>
         </div>
       </div>
 
