@@ -6,41 +6,143 @@
   <title>Saul Santos Jimenez</title>
   <meta property="og:title" content="Saul Santos Jimenez — Mechanical Engineering, Boston University" />
   <meta property="og:description" content="Sophomore engineer focused on manufacturing, fabrication, and hands-on design. BURPG · EPIC Lab." />
-  <meta property="og:image" content="https://impartiall.github.io/Saul-Santos-Jimenez.github.io/hip_nozzle_adapter.jpg" />
+  <meta property="og:image" content="https://impartiall.github.io/Saul-Santos-Jimenez.github.io/hip-nozzle-assembly.png" />
   <meta property="og:type" content="website" />
   <meta name="twitter:card" content="summary_large_image" />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --navy:   #1a2235;
-      --ink:    #2c3445;
-      --steel:  #5a6478;
-      --mist:   #e8ecf2;
-      --page:   #f5f6f8;
-      --white:  #ffffff;
-      --amber:  #c8813a;   /* single accent — warm, not generic */
-      --radius: 4px;
+      /* ── HUD palette: dark instrument panel, cyan traces, sparing gold/red ── */
+      --bg-0:    #05080f;   /* deep instrument black */
+      --bg-1:    #0a1120;   /* panel fill */
+      --bg-2:    #0f1a2e;   /* raised panel */
+      --cyan:    #4fe4ff;   /* primary trace */
+      --cyan-dim:#1d6d82;   /* dim trace / grid */
+      --ink:     #cfe9f2;   /* body text (high contrast on dark) */
+      --muted:   #7fa8b8;   /* secondary text */
+      --gold:    #f0b34a;   /* accent, used sparingly */
+      --red:     #ff5a52;   /* alert accent, used sparingly */
+      --line:    rgba(79,228,255,0.22);
+      --line-2:  rgba(79,228,255,0.12);
+      --glow:    0 0 10px rgba(79,228,255,0.35);
+      --radius:  3px;
     }
 
     html { scroll-behavior: smooth; }
 
     body {
-      font-family: 'Inter', sans-serif;
-      background: var(--page);
+      font-family: 'Chakra Petch', sans-serif;
+      background: var(--bg-0);
       color: var(--ink);
       font-size: 16px;
       line-height: 1.6;
       -webkit-font-smoothing: antialiased;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* ── BACKGROUND: hex + grid field, drawn with CSS only ── */
+    .hud-bg {
+      position: fixed;
+      inset: 0;
+      z-index: -2;
+      background-color: var(--bg-0);
+      background-image:
+        linear-gradient(var(--line-2) 1px, transparent 1px),
+        linear-gradient(90deg, var(--line-2) 1px, transparent 1px),
+        radial-gradient(ellipse 120% 80% at 50% -10%, rgba(31,109,130,0.35), transparent 60%);
+      background-size: 40px 40px, 40px 40px, 100% 100%;
+      background-position: center top;
+    }
+
+    .hud-hex {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      opacity: 0.4;
+      pointer-events: none;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='56' height='100' viewBox='0 0 56 100'><g fill='none' stroke='%231d6d82' stroke-width='1' opacity='0.5'><polygon points='28,1 55,17 55,50 28,66 1,50 1,17'/><polygon points='28,67 55,83 55,116 28,132 1,116 1,83'/></g></svg>");
+      background-size: 56px 100px;
+    }
+
+    /* ── FIXED VIEWPORT CORNER BRACKETS (HUD frame) ── */
+    .hud-frame { position: fixed; inset: 0; z-index: 90; pointer-events: none; }
+    .hud-frame span {
+      position: absolute;
+      width: 26px; height: 26px;
+      border: 2px solid var(--cyan-dim);
+      opacity: 0.6;
+    }
+    .hud-frame .tl { top: 10px; left: 10px; border-right: 0; border-bottom: 0; }
+    .hud-frame .tr { top: 10px; right: 10px; border-left: 0; border-bottom: 0; }
+    .hud-frame .bl { bottom: 10px; left: 10px; border-right: 0; border-top: 0; }
+    .hud-frame .br { bottom: 10px; right: 10px; border-left: 0; border-top: 0; }
+
+    /* ── BOOT-UP: scanline sweep + panel fade-in ── */
+    .scanline {
+      position: fixed;
+      left: 0; right: 0; top: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+      box-shadow: 0 0 18px 2px rgba(79,228,255,0.6);
+      z-index: 2000;
+      animation: sweep 1.1s ease-out forwards;
+      pointer-events: none;
+    }
+    @keyframes sweep {
+      0%   { top: 0; opacity: 0; }
+      8%   { opacity: 1; }
+      92%  { opacity: 1; }
+      100% { top: 100vh; opacity: 0; }
+    }
+
+    .boot [data-boot] {
+      opacity: 0;
+      transform: translateY(8px);
+      animation: panelIn 0.5s ease-out forwards;
+    }
+    .boot nav              { animation-delay: 0.05s; }
+    .boot .hero            { animation-delay: 0.15s; }
+    .boot #about           { animation-delay: 0.30s; }
+    .boot #skills-sec      { animation-delay: 0.40s; }
+    .boot #projects        { animation-delay: 0.50s; }
+    .boot #contact         { animation-delay: 0.60s; }
+    .boot footer           { animation-delay: 0.70s; }
+    @keyframes panelIn { to { opacity: 1; transform: translateY(0); } }
+
+    /* blinking status dot */
+    .live-dot {
+      display: inline-block;
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--cyan);
+      box-shadow: 0 0 8px var(--cyan);
+      margin-right: 0.5rem;
+      vertical-align: middle;
+      animation: blink 1.6s steps(2, start) infinite;
+    }
+    .status-red { background: var(--red); box-shadow: 0 0 8px var(--red); }
+    @keyframes blink { 50% { opacity: 0.25; } }
+
+    /* reduced motion: no sweep, no slide, no blink */
+    @media (prefers-reduced-motion: reduce) {
+      .scanline { display: none; }
+      .boot [data-boot] { opacity: 1 !important; transform: none !important; animation: none !important; }
+      .live-dot { animation: none !important; }
+      html { scroll-behavior: auto; }
     }
 
     /* ── NAV ── */
     nav {
       position: fixed;
       top: 0; left: 0; right: 0;
-      background: var(--white);
-      border-bottom: 1px solid var(--mist);
+      background: rgba(5,8,15,0.82);
+      backdrop-filter: blur(6px);
+      border-bottom: 1px solid var(--line);
       z-index: 100;
       padding: 0 clamp(1.5rem, 5vw, 4rem);
       display: flex;
@@ -50,349 +152,393 @@
     }
 
     .nav-name {
-      font-family: 'DM Serif Display', serif;
-      font-size: 1.05rem;
-      color: var(--navy);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 1rem;
+      color: var(--cyan);
       text-decoration: none;
-      letter-spacing: 0.01em;
+      letter-spacing: 0.06em;
+      text-shadow: var(--glow);
     }
+    .nav-name::before { content: '> '; color: var(--gold); }
 
-    .nav-links {
-      display: flex;
-      gap: 2rem;
-      list-style: none;
-    }
+    .nav-links { display: flex; gap: 2rem; list-style: none; }
 
     .nav-links a {
-      font-size: 0.85rem;
-      font-weight: 500;
-      color: var(--steel);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.82rem;
+      color: var(--muted);
       text-decoration: none;
-      transition: color 0.15s;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      transition: color 0.15s, text-shadow 0.15s;
     }
-
-    .nav-links a:hover { color: var(--navy); }
+    .nav-links a:hover { color: var(--cyan); text-shadow: var(--glow); }
 
     /* ── HERO ── */
     .hero {
       padding: clamp(6rem, 12vw, 10rem) clamp(1.5rem, 5vw, 4rem) clamp(3rem, 6vw, 5rem);
-      max-width: 860px;
+      max-width: 960px;
+      position: relative;
     }
 
     .hero-eyebrow {
+      font-family: 'Share Tech Mono', monospace;
       font-size: 0.8rem;
-      font-weight: 500;
-      letter-spacing: 0.08em;
-      color: var(--amber);
+      letter-spacing: 0.14em;
+      color: var(--gold);
       text-transform: uppercase;
       margin-bottom: 1.2rem;
     }
+    .hero-eyebrow::before { content: '// '; opacity: 0.7; }
 
     .hero h1 {
-      font-family: 'DM Serif Display', serif;
-      font-size: clamp(3rem, 8vw, 5.5rem);
+      font-family: 'Chakra Petch', sans-serif;
+      font-weight: 700;
+      font-size: clamp(2.6rem, 8vw, 5rem);
       line-height: 1.05;
-      color: var(--navy);
+      color: #eafbff;
+      text-transform: uppercase;
+      letter-spacing: 0.01em;
       margin-bottom: 1.5rem;
+      text-shadow: 0 0 18px rgba(79,228,255,0.25);
     }
 
     .hero-sub {
       font-size: 1.1rem;
-      font-weight: 300;
-      color: var(--steel);
-      max-width: 560px;
+      color: var(--muted);
+      max-width: 600px;
       line-height: 1.7;
-      margin-bottom: 2.5rem;
+      margin-bottom: 2rem;
     }
 
-    .hero-links {
-      display: flex;
-      gap: 1.2rem;
-      flex-wrap: wrap;
+    /* hero status line (system-online readout) */
+    .hero-status {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.8rem;
+      color: var(--cyan);
+      letter-spacing: 0.06em;
+      margin-bottom: 2.25rem;
     }
+    .hero-status .sep { color: var(--cyan-dim); margin: 0 0.5rem; }
+    .hero-status .val { color: var(--ink); }
+
+    .hero-links { display: flex; gap: 1.2rem; flex-wrap: wrap; }
 
     .btn {
       display: inline-block;
       padding: 0.6rem 1.4rem;
-      font-size: 0.85rem;
-      font-weight: 500;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.82rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
       border-radius: var(--radius);
       text-decoration: none;
-      transition: background 0.15s, color 0.15s;
+      transition: background 0.15s, color 0.15s, box-shadow 0.15s, border-color 0.15s;
     }
-
     .btn-primary {
-      background: var(--navy);
-      color: var(--white);
+      background: transparent;
+      color: var(--cyan);
+      border: 1px solid var(--cyan);
+      box-shadow: inset 0 0 12px rgba(79,228,255,0.12), 0 0 8px rgba(79,228,255,0.2);
     }
-
-    .btn-primary:hover { background: var(--ink); }
-
-    .btn-ghost {
-      border: 1px solid var(--steel);
-      color: var(--steel);
+    .btn-primary:hover {
+      background: rgba(79,228,255,0.12);
+      box-shadow: inset 0 0 18px rgba(79,228,255,0.25), 0 0 14px rgba(79,228,255,0.4);
     }
-
-    .btn-ghost:hover { border-color: var(--navy); color: var(--navy); }
+    .btn-ghost { border: 1px solid var(--cyan-dim); color: var(--muted); }
+    .btn-ghost:hover { border-color: var(--cyan); color: var(--cyan); text-shadow: var(--glow); }
 
     /* ── SECTIONS ── */
     section {
       padding: clamp(3rem, 6vw, 5rem) clamp(1.5rem, 5vw, 4rem);
-      max-width: 900px;
+      max-width: 960px;
+      position: relative;
     }
 
     .section-label {
-      font-size: 0.75rem;
-      font-weight: 600;
-      letter-spacing: 0.1em;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.78rem;
+      letter-spacing: 0.14em;
       text-transform: uppercase;
-      color: var(--amber);
+      color: var(--cyan);
       margin-bottom: 2rem;
       display: flex;
       align-items: center;
       gap: 0.75rem;
+      text-shadow: var(--glow);
     }
-
+    .section-label::before { content: '[ '; color: var(--gold); }
     .section-label::after {
       content: '';
       flex: 1;
-      max-width: 48px;
       height: 1px;
-      background: var(--amber);
-      opacity: 0.5;
+      background: linear-gradient(90deg, var(--cyan-dim), transparent);
     }
 
     /* ── ABOUT ── */
-    .about-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 2rem 3rem;
-    }
+    .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem 3rem; }
 
     .about-text p {
-      color: var(--steel);
-      font-weight: 300;
+      color: var(--ink);
       line-height: 1.8;
       margin-bottom: 1rem;
       max-width: 65ch;
     }
-
     .about-text p:last-child { margin-bottom: 0; }
 
-    .about-facts {
-      display: flex;
-      flex-direction: column;
-      gap: 1.25rem;
-    }
+    .about-facts { display: flex; flex-direction: column; gap: 1.1rem; }
 
-    .fact {
-      border-left: 2px solid var(--mist);
-      padding-left: 1rem;
+    .fact { border-left: 2px solid var(--cyan-dim); padding-left: 1rem; position: relative; }
+    .fact::before {
+      content: '';
+      position: absolute;
+      left: -2px; top: 0;
+      width: 2px; height: 10px;
+      background: var(--cyan);
+      box-shadow: var(--glow);
     }
-
     .fact-label {
-      font-size: 0.72rem;
-      font-weight: 600;
-      letter-spacing: 0.08em;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
       text-transform: uppercase;
-      color: var(--amber);
+      color: var(--gold);
       margin-bottom: 0.25rem;
     }
-
-    .fact-value {
-      font-size: 0.9rem;
-      color: var(--ink);
-      font-weight: 400;
-    }
+    .fact-value { font-size: 0.92rem; color: var(--ink); font-weight: 500; }
 
     /* ── SKILLS ── */
-    .skills-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-      gap: 0.6rem;
-    }
-
+    .skills-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0.6rem; }
     .skill-tag {
-      background: var(--white);
-      border: 1px solid var(--mist);
+      background: var(--bg-1);
+      border: 1px solid var(--line);
       border-radius: var(--radius);
       padding: 0.5rem 0.75rem;
-      font-size: 0.82rem;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.8rem;
       color: var(--ink);
-      font-weight: 400;
+      letter-spacing: 0.04em;
+      transition: border-color 0.15s, color 0.15s, box-shadow 0.15s;
     }
+    .skill-tag:hover { border-color: var(--cyan); color: var(--cyan); box-shadow: inset 0 0 10px rgba(79,228,255,0.1); }
 
     /* ── PROJECTS ── */
-    .projects-list {
-      display: flex;
-      flex-direction: column;
-      gap: 2rem;
-    }
+    .projects-list { display: flex; flex-direction: column; gap: 2rem; }
 
-    .project-card {
-      background: var(--white);
-      border: 1px solid var(--mist);
-      border-radius: var(--radius);
-      overflow: hidden;
-      display: grid;
-      grid-template-columns: 280px 1fr;
+    .panel {
+      position: relative;
+      background: linear-gradient(180deg, rgba(15,26,46,0.6), rgba(10,17,32,0.6));
+      border: 1px solid var(--line);
     }
+    .panel::before, .panel::after,
+    .panel > .corner-tr, .panel > .corner-bl {
+      content: '';
+      position: absolute;
+      width: 14px; height: 14px;
+      border-color: var(--cyan);
+      border-style: solid;
+      border-width: 0;
+      pointer-events: none;
+    }
+    .panel::before { top: -1px; left: -1px; border-top-width: 2px; border-left-width: 2px; }
+    .panel::after  { bottom: -1px; right: -1px; border-bottom-width: 2px; border-right-width: 2px; }
+    .panel > .corner-tr { top: -1px; right: -1px; border-top-width: 2px; border-right-width: 2px; }
+    .panel > .corner-bl { bottom: -1px; left: -1px; border-bottom-width: 2px; border-left-width: 2px; }
+
+    .project-card { border-radius: var(--radius); overflow: hidden; display: grid; grid-template-columns: 300px 1fr; }
+
+    .project-figure { position: relative; min-height: 230px; background: var(--bg-2); border-right: 1px solid var(--line); }
 
     .project-img {
       width: 100%;
       height: 100%;
       object-fit: cover;
       display: block;
-      min-height: 220px;
-      background: var(--mist);
+      min-height: 230px;
       cursor: zoom-in;
-      transition: opacity 0.15s;
+      transition: opacity 0.15s, filter 0.15s;
+      filter: saturate(0.9) contrast(1.02);
+    }
+    .project-img:hover { opacity: 0.92; filter: saturate(1.05) contrast(1.05); }
+
+    .project-figure .fig-tag {
+      position: absolute;
+      left: 8px; top: 8px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.62rem;
+      letter-spacing: 0.1em;
+      color: var(--cyan);
+      background: rgba(5,8,15,0.6);
+      border: 1px solid var(--line);
+      padding: 0.15rem 0.4rem;
+      text-transform: uppercase;
+      pointer-events: none;
+      z-index: 2;
     }
 
-    .project-img:hover { opacity: 0.9; }
-
-    .project-body {
-      padding: 1.75rem 2rem;
+    /* image fallback when src fails or no image yet */
+    .img-fallback {
+      position: absolute;
+      inset: 0;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      text-align: center;
+      padding: 1rem;
+      background:
+        repeating-linear-gradient(45deg, rgba(79,228,255,0.04) 0 10px, transparent 10px 20px),
+        var(--bg-2);
     }
+    .img-fallback .fb-icon { font-family: 'Share Tech Mono', monospace; font-size: 1.6rem; color: var(--cyan-dim); }
+    .img-fallback .fb-main { font-family: 'Share Tech Mono', monospace; font-size: 0.78rem; letter-spacing: 0.1em; color: var(--cyan); text-transform: uppercase; }
+    .img-fallback .fb-sub  { font-family: 'Share Tech Mono', monospace; font-size: 0.66rem; color: var(--muted); letter-spacing: 0.06em; }
+    .project-figure.no-image .project-img { display: none; }
+    .project-figure.no-image .img-fallback { display: flex; }
+
+    .project-body { padding: 1.75rem 2rem; }
 
     .project-meta {
-      font-size: 0.75rem;
-      font-weight: 500;
-      color: var(--amber);
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      margin-bottom: 0.6rem;
-    }
-
-    .project-title {
-      font-family: 'DM Serif Display', serif;
-      font-size: 1.4rem;
-      color: var(--navy);
-      margin-bottom: 0.75rem;
-      line-height: 1.25;
-    }
-
-    .project-desc {
-      font-size: 0.9rem;
-      color: var(--steel);
-      font-weight: 300;
-      line-height: 1.75;
-      margin-bottom: 1.25rem;
-      max-width: 55ch;
-    }
-
-    .project-tags {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.4rem;
-      margin-bottom: 1.25rem;
-    }
-
-    .tag {
-      background: var(--page);
-      border: 1px solid var(--mist);
-      border-radius: 2px;
-      padding: 0.2rem 0.55rem;
-      font-size: 0.75rem;
-      color: var(--steel);
-    }
-
-    .project-learned {
-      border-top: 1px solid var(--mist);
-      padding-top: 1rem;
-    }
-
-    .learned-label {
-      font-size: 0.72rem;
-      font-weight: 600;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.74rem;
+      color: var(--gold);
       letter-spacing: 0.08em;
       text-transform: uppercase;
-      color: var(--navy);
-      margin-bottom: 0.35rem;
+      margin-bottom: 0.6rem;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    .status-chip {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.66rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 0.1rem 0.5rem;
+      border-radius: 2px;
+      border: 1px solid var(--cyan-dim);
+      color: var(--cyan);
+    }
+    .status-chip.in-progress { border-color: var(--gold); color: var(--gold); }
+    .status-chip.done { border-color: var(--cyan-dim); color: var(--muted); }
+
+    .project-title {
+      font-family: 'Chakra Petch', sans-serif;
+      font-weight: 600;
+      font-size: 1.35rem;
+      color: #eafbff;
+      margin-bottom: 0.75rem;
+      line-height: 1.25;
+      text-transform: uppercase;
+      letter-spacing: 0.01em;
     }
 
-    .learned-text {
-      font-size: 0.85rem;
-      color: var(--steel);
-      font-weight: 300;
-      line-height: 1.6;
+    .project-desc { font-size: 0.92rem; color: var(--muted); line-height: 1.75; margin-bottom: 1.25rem; max-width: 60ch; }
+
+    .project-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 1.25rem; }
+    .tag {
+      background: var(--bg-1);
+      border: 1px solid var(--line-2);
+      border-radius: 2px;
+      padding: 0.2rem 0.55rem;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.72rem;
+      color: var(--muted);
+      letter-spacing: 0.03em;
     }
+
+    .project-learned { border-top: 1px solid var(--line-2); padding-top: 1rem; }
+    .learned-label {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--cyan);
+      margin-bottom: 0.35rem;
+    }
+    .learned-text { font-size: 0.88rem; color: var(--muted); line-height: 1.65; }
+
+    /* spec readout grid inside a card */
+    .spec-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 0.6rem;
+      margin-bottom: 1.25rem;
+      border-top: 1px solid var(--line-2);
+      border-bottom: 1px solid var(--line-2);
+      padding: 0.9rem 0;
+    }
+    .spec { display: flex; flex-direction: column; gap: 0.1rem; }
+    .spec .s-label { font-family: 'Share Tech Mono', monospace; font-size: 0.6rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+    .spec .s-value { font-family: 'Share Tech Mono', monospace; font-size: 0.9rem; color: var(--cyan); }
 
     /* placeholder card */
     .project-card-placeholder {
-      border: 1px dashed var(--mist);
+      border: 1px dashed var(--cyan-dim);
       border-radius: var(--radius);
       padding: 2rem;
       display: flex;
       align-items: center;
       gap: 1.5rem;
-      color: var(--steel);
+      color: var(--muted);
+      background: rgba(10,17,32,0.4);
     }
-
     .placeholder-icon {
-      width: 40px;
-      height: 40px;
+      width: 44px; height: 44px;
       border-radius: 50%;
-      background: var(--mist);
+      border: 1px solid var(--cyan-dim);
+      background: var(--bg-2);
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 1.1rem;
       flex-shrink: 0;
+      box-shadow: inset 0 0 10px rgba(79,228,255,0.1);
     }
-
-    .placeholder-text p {
-      font-size: 0.85rem;
-      color: var(--steel);
-      font-weight: 300;
-    }
-
+    .placeholder-text p { font-size: 0.85rem; color: var(--muted); }
     .placeholder-text strong {
+      font-family: 'Share Tech Mono', monospace;
       font-size: 0.9rem;
       color: var(--ink);
-      font-weight: 500;
+      letter-spacing: 0.04em;
       display: block;
       margin-bottom: 0.25rem;
+      text-transform: uppercase;
     }
 
     /* ── CONTACT ── */
-    .contact-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1rem;
-      align-items: center;
-    }
-
+    .contact-intro { font-size: 0.95rem; color: var(--muted); margin-bottom: 1.25rem; max-width: 55ch; }
+    .contact-row { display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; }
     .contact-link {
+      font-family: 'Share Tech Mono', monospace;
       font-size: 0.88rem;
-      color: var(--steel);
+      color: var(--ink);
       text-decoration: none;
-      font-weight: 400;
+      letter-spacing: 0.03em;
       border-bottom: 1px solid transparent;
-      transition: color 0.15s, border-color 0.15s;
+      transition: color 0.15s, border-color 0.15s, text-shadow 0.15s;
     }
-
-    .contact-link:hover {
-      color: var(--navy);
-      border-bottom-color: var(--navy);
-    }
-
-    .divider { color: var(--mist); user-select: none; }
+    .contact-link:hover { color: var(--cyan); border-bottom-color: var(--cyan); text-shadow: var(--glow); }
+    .divider { color: var(--cyan-dim); user-select: none; }
 
     /* ── FOOTER ── */
     footer {
       padding: 2rem clamp(1.5rem, 5vw, 4rem);
-      border-top: 1px solid var(--mist);
-      font-size: 0.78rem;
-      color: var(--steel);
-      font-weight: 300;
+      border-top: 1px solid var(--line);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.76rem;
+      color: var(--muted);
+      letter-spacing: 0.04em;
     }
+    footer::before { content: '// '; color: var(--cyan-dim); }
 
     /* ── LIGHTBOX ── */
     .lightbox-overlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(20, 24, 35, 0.92);
+      background: rgba(3,6,12,0.94);
       z-index: 1000;
       display: none;
       align-items: center;
@@ -400,52 +546,60 @@
       padding: 2rem;
       cursor: zoom-out;
     }
-
-    .lightbox-overlay.active {
-      display: flex;
-    }
-
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-frame { position: relative; max-width: 92vw; max-height: 90vh; }
     .lightbox-overlay img {
       max-width: 92vw;
       max-height: 90vh;
       object-fit: contain;
-      border-radius: 4px;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+      border: 1px solid var(--cyan);
+      box-shadow: 0 0 30px rgba(79,228,255,0.35);
+      display: block;
     }
-
+    .lightbox-frame::before, .lightbox-frame::after {
+      content: '';
+      position: absolute;
+      width: 22px; height: 22px;
+      border: 2px solid var(--cyan);
+      pointer-events: none;
+    }
+    .lightbox-frame::before { top: -6px; left: -6px; border-right: 0; border-bottom: 0; }
+    .lightbox-frame::after  { bottom: -6px; right: -6px; border-left: 0; border-top: 0; }
     .lightbox-close {
       position: absolute;
-      top: 1.5rem;
-      right: 2rem;
-      color: var(--white);
+      top: 1.5rem; right: 2rem;
+      color: var(--cyan);
       font-size: 1.8rem;
-      font-weight: 300;
       cursor: pointer;
       line-height: 1;
-      opacity: 0.8;
+      opacity: 0.85;
+      text-shadow: var(--glow);
       transition: opacity 0.15s;
     }
-
     .lightbox-close:hover { opacity: 1; }
 
     /* ── RESPONSIVE ── */
     @media (max-width: 680px) {
       .about-grid { grid-template-columns: 1fr; }
-
-      .project-card {
-        grid-template-columns: 1fr;
-      }
-
+      .project-card { grid-template-columns: 1fr; }
+      .project-figure { border-right: 0; border-bottom: 1px solid var(--line); min-height: 200px; }
       .project-img { min-height: 200px; }
-
       .nav-links { display: none; }
+      .hud-hex { opacity: 0.25; }
+      .hud-frame { display: none; }
     }
   </style>
 </head>
-<body>
+<body class="boot">
+
+  <!-- HUD BACKGROUND LAYERS -->
+  <div class="hud-bg" aria-hidden="true"></div>
+  <div class="hud-hex" aria-hidden="true"></div>
+  <div class="hud-frame" aria-hidden="true"><span class="tl"></span><span class="tr"></span><span class="bl"></span><span class="br"></span></div>
+  <div class="scanline" aria-hidden="true"></div>
 
   <!-- NAV -->
-  <nav>
+  <nav data-boot>
     <a class="nav-name" href="#">Saul Santos Jimenez</a>
     <ul class="nav-links">
       <li><a href="#about">About</a></li>
@@ -455,12 +609,17 @@
   </nav>
 
   <!-- HERO -->
-  <div class="hero">
+  <div class="hero" data-boot>
     <p class="hero-eyebrow">Mechanical Engineering · Boston University</p>
     <h1>Saul Santos<br>Jimenez</h1>
     <p class="hero-sub">
       Sophomore engineer focused on manufacturing, fabrication, and the hands-on side of
       making things work. Lab assistant at BU's EPIC lab. Member of BURPG.
+    </p>
+    <p class="hero-status">
+      <span class="live-dot"></span>STATUS: OPEN TO SUMMER 2027 INTERNSHIPS
+      <span class="sep">//</span>LOCATION: <span class="val">BOSTON, MA</span>
+      <span class="sep">//</span>GRAD: <span class="val">MAY 2029</span>
     </p>
     <div class="hero-links">
       <a class="btn btn-primary" href="#projects">See my work</a>
@@ -469,7 +628,7 @@
   </div>
 
   <!-- ABOUT -->
-  <section id="about">
+  <section id="about" data-boot>
     <p class="section-label">About</p>
     <div class="about-grid">
       <div class="about-text">
@@ -479,81 +638,100 @@
           are actually built — not just designed.
         </p>
         <p>
-          My day-to-day at EPIC has me operating CNC mills, lathes, waterjets, and wire EDM
-          machines while supporting graduate research. I'm learning what it takes to go from
-          a CAD model to a precise physical object, and I'm getting better at it.
+          My day-to-day at EPIC has me running CNC mills and lathes, the waterjet, wire EDM,
+          laser cutters, and sheet metal tools, and coaching students and researchers on safe
+          setup. The waterjet is my adopt-a-tool — I troubleshoot its pump and filtration and
+          I'm the shop go-to for toolpath problems. I'm learning what it takes to go from a CAD
+          model to a precise physical object, and I'm getting better at it.
         </p>
         <p>
-          Outside of engineering I'm into photography, cooking, and getting outdoors when I can.
-          Bilingual in English and Spanish.
+          Outside of engineering I shoot photo and video — I've directed and edited for a school
+          TV channel and taught photography to younger students. Heritage Spanish speaker.
         </p>
       </div>
       <div class="about-facts">
         <div class="fact">
           <div class="fact-label">Current role</div>
-          <div class="fact-value">Lab Assistant — BU EPIC Lab</div>
+          <div class="fact-value">Lab Assistant — BU EPIC Lab · May 2026–Present</div>
         </div>
         <div class="fact">
           <div class="fact-label">Organizations</div>
-          <div class="fact-value">BURPG · SHPE · BU Outing Club</div>
+          <div class="fact-value">BURPG — Machining Intro Project Lead · SHPE · BU Auto Club · Terrier Motorsport</div>
         </div>
         <div class="fact">
           <div class="fact-label">Interests</div>
           <div class="fact-value">Manufacturing · Rail infrastructure · Automotive</div>
         </div>
         <div class="fact">
-          <div class="fact-label">Honors</div>
-          <div class="fact-value">HSF Scholar · Keolis Scholarship · Valedictorian Project</div>
+          <div class="fact-label">Scholar</div>
+          <div class="fact-value">HSF Scholar · Keolis Commuter Services Scholarship</div>
         </div>
       </div>
     </div>
   </section>
 
   <!-- SKILLS -->
-  <section>
+  <section id="skills-sec" data-boot>
     <p class="section-label">Skills</p>
     <div class="skills-grid">
-      <div class="skill-tag">CNC Mill</div>
-      <div class="skill-tag">Lathe</div>
+      <div class="skill-tag">CNC Mill &amp; Lathe</div>
+      <div class="skill-tag">Manual Mill &amp; Lathe</div>
       <div class="skill-tag">Waterjet</div>
       <div class="skill-tag">Wire EDM</div>
-      <div class="skill-tag">3D Printing</div>
-      <div class="skill-tag">3D Scanning</div>
+      <div class="skill-tag">Laser Cutting</div>
       <div class="skill-tag">Sheet Metal</div>
-      <div class="skill-tag">Metrology</div>
+      <div class="skill-tag">TIG Welding</div>
+      <div class="skill-tag">3D Scanning</div>
+      <div class="skill-tag">Tolerancing / Fits</div>
+      <div class="skill-tag">SolidWorks</div>
       <div class="skill-tag">Onshape CAD</div>
-      <div class="skill-tag">AutoCAD</div>
       <div class="skill-tag">Arduino / C++</div>
-      <div class="skill-tag">MATLAB</div>
-      <div class="skill-tag">Python</div>
       <div class="skill-tag">Adobe Premiere</div>
       <div class="skill-tag">After Effects</div>
       <div class="skill-tag">Photoshop</div>
+      <div class="skill-tag">Spanish (heritage)</div>
     </div>
   </section>
 
   <!-- PROJECTS -->
-  <section id="projects">
+  <section id="projects" data-boot>
     <p class="section-label">Projects</p>
     <div class="projects-list">
 
       <!-- PROJECT 1: EK131 Temperature Monitor -->
-      <div class="project-card">
-        <img
-          class="project-img"
-          src="ek131_device.jpg"
-          alt="Arduino temperature monitor — packaged black ABS enclosure with LCD displaying 69.44°F"
-          onclick="openLightbox(this.src, this.alt)"
-        />
+      <div class="project-card panel">
+        <span class="corner-tr"></span><span class="corner-bl"></span>
+        <div class="project-figure">
+          <span class="fig-tag">IMG-01</span>
+          <img
+            class="project-img"
+            src="ek131-temperature-monitor.jpg"
+            alt="Arduino temperature monitor — packaged black ABS enclosure with LCD displaying 69.44°F"
+            onclick="openLightbox(this.src, this.alt)"
+            onerror="markNoImage(this)"
+          />
+          <div class="img-fallback">
+            <div class="fb-icon">[ ! ]</div>
+            <div class="fb-main">Signal Pending</div>
+            <div class="fb-sub">no image feed</div>
+          </div>
+        </div>
         <div class="project-body">
-          <p class="project-meta">EK131 · Spring 2026</p>
+          <p class="project-meta">EK131 · Spring 2026 <span class="status-chip done">Finished</span></p>
           <h2 class="project-title">Arduino Temperature Monitor</h2>
           <p class="project-desc">
             A battery-powered, standalone room temperature monitor built from scratch over one
-            semester. Uses a TMP36 analog sensor, a 10-bit ADC, and an I2C LCD to display
-            real-time temperature in Fahrenheit. Triggers a buzzer and blinking red LED alarm
-            when temperature leaves the 62–75°F range.
+            semester. A TMP36 analog sensor feeds the Arduino's 10-bit ADC, and an I2C LCD shows
+            real-time temperature in Fahrenheit. A buzzer and blinking red LED alarm trigger
+            whenever temperature leaves the 62–75°F range. I modeled the enclosure in Onshape,
+            3D printed a flexible battery holder, and soldered the wiring by hand.
           </p>
+          <div class="spec-grid">
+            <div class="spec"><span class="s-label">Current draw</span><span class="s-value">45–50 mA</span></div>
+            <div class="spec"><span class="s-label">Battery life</span><span class="s-value">~10–11 hr</span></div>
+            <div class="spec"><span class="s-label">Supply</span><span class="s-value">9 V</span></div>
+            <div class="spec"><span class="s-label">Alarm band</span><span class="s-value">62–75°F</span></div>
+          </div>
           <div class="project-tags">
             <span class="tag">Arduino Uno</span>
             <span class="tag">C++</span>
@@ -576,22 +754,32 @@
       </div>
 
       <!-- PROJECT 2: D-Shaft Coupler -->
-      <div class="project-card">
-        <img
-          class="project-img"
-          src="dshaft_coupler.jpg"
-          alt="D-shaft coupler machined on the wire EDM at BU's EPIC lab"
-          onclick="openLightbox(this.src, this.alt)"
-        />
+      <div class="project-card panel">
+        <span class="corner-tr"></span><span class="corner-bl"></span>
+        <div class="project-figure no-image">
+          <span class="fig-tag">IMG-02</span>
+          <img
+            class="project-img"
+            src="dshaft-coupler.jpg"
+            alt="D-shaft coupler machined on the wire EDM at BU's EPIC lab"
+            onclick="openLightbox(this.src, this.alt)"
+            onerror="markNoImage(this)"
+          />
+          <div class="img-fallback">
+            <div class="fb-icon">[ ◎ ]</div>
+            <div class="fb-main">Photo Incoming</div>
+            <div class="fb-sub">shop image being captured</div>
+          </div>
+        </div>
         <div class="project-body">
-          <p class="project-meta">EPIC Lab · Summer 2026</p>
+          <p class="project-meta">EPIC Lab · Summer 2026 <span class="status-chip done">Finished</span></p>
           <h2 class="project-title">D-Shaft Coupler for ME359</h2>
           <p class="project-desc">
-            Designed and machined a D-shaft coupler for an electric motor, built for ME359 — a
-            new course being developed at BU after seniors were reaching capstone without knowing
-            how to fabricate their own prototypes. The course has students design, build, and test
-            a full transmission against a professor's target, with only the housing and motor held
-            constant.
+            Designed and machined a D-shaft coupler on the wire EDM at EPIC for ME359, a new
+            hands-on transmission course being developed at BU to replace ME358. The part needed
+            a transition fit to seat on the shaft without play — a topic I hadn't covered in
+            coursework yet, so I learned it on my own, modeled the coupler in Onshape, and dialed
+            in a 0.003" offset to land the fit.
           </p>
           <div class="project-tags">
             <span class="tag">Wire EDM</span>
@@ -602,63 +790,129 @@
           <div class="project-learned">
             <p class="learned-label">What I learned</p>
             <p class="learned-text">
-              The coupler needed a transition fit tight enough to slide onto the motor shaft
-              without play, but I hadn't taken any coursework on fit tolerances yet. I researched
-              transition fits on my own, designed the part in Onshape, and added a 0.003" offset
-              to get it right. I also had a single day to finish it on the wire EDM — one of the
-              most advanced machines in the shop — which meant making a real call under pressure
-              about how to approach the cut, and how to work through a disagreement with a
-              coworker about the best way to get there.
+              How to teach myself a fit I'd never used, then commit to it on one of the most
+              precise machines in the shop. Getting a transition fit right means the tolerance
+              call you make in CAD has to survive the real cut — there's no fudging it afterward.
             </p>
           </div>
         </div>
       </div>
 
-      <!-- PROJECT 3: HIP - Hybrid Intro Project -->
-      <div class="project-card">
-        <img
-          class="project-img"
-          src="hip_nozzle_adapter.jpg"
-          alt="Nozzle-to-chamber adapter assembly for BURPG's Hybrid Intro Project"
-          onclick="openLightbox(this.src, this.alt)"
-        />
+      <!-- PROJECT 3: HIP - Hybrid Intro Project (nozzle only) -->
+      <div class="project-card panel">
+        <span class="corner-tr"></span><span class="corner-bl"></span>
+        <div class="project-figure">
+          <span class="fig-tag">IMG-03</span>
+          <img
+            class="project-img"
+            src="hip-nozzle-drawing.png"
+            alt="Rocket nozzle P001 SolidWorks drawing — 80% bell contour, dimensioned adapter flange, ABS resin"
+            onclick="openLightbox(this.src, this.alt)"
+            onerror="this.onerror=null; this.src='hip-nozzle-assembly.png'; this.alt='Nozzle-to-adapter-to-chamber assembly for BURPG\u0027s Hybrid Intro Project nozzle';"
+          />
+          <div class="img-fallback">
+            <div class="fb-icon">[ ! ]</div>
+            <div class="fb-main">Signal Pending</div>
+            <div class="fb-sub">no image feed</div>
+          </div>
+        </div>
         <div class="project-body">
-          <p class="project-meta">BURPG · In Progress — Fall 2026</p>
-          <h2 class="project-title">Hybrid Intro Project (HIP) — Rocket Nozzle & Test Computer</h2>
+          <p class="project-meta">BURPG · Fall 2026 <span class="status-chip in-progress">In Progress</span></p>
+          <h2 class="project-title">Hybrid Intro Project — Rocket Nozzle</h2>
           <p class="project-desc">
-            Designing a rocket engine nozzle to spec and building the electronics test computer
-            that fires it, as part of BURPG's intro pipeline. The nozzle has to interface with a
-            fixed aluminum adapter and chamber using a 220-size O-ring seal and a 1" NPT
-            connection, sized against real design parameters — chamber pressure, mass flow rate,
-            and combustion gas properties — rather than arbitrary numbers.
+            Designing a hybrid rocket nozzle to real combustion parameters for BURPG's intro
+            pipeline: 80 psia chamber pressure, 3250 K, 13 g/s mass flow. I sized the throat and
+            exit from those numbers, compared a cone, a 60% bell, and an 80% bell, and chose the
+            80% bell for the best performance-to-length trade. It's modeled in SolidWorks with an
+            equation-driven bell contour and mates to a supplied adapter flange with a 220-size
+            O-ring seal and a 1" NPT chamber connection. The nozzle prints in ABS resin — the
+            right call for an intro project given the complex contour and low cost, with the
+            understanding that it only needs to survive a few seconds of fire.
           </p>
+          <div class="spec-grid">
+            <div class="spec"><span class="s-label">Throat dia.</span><span class="s-value">0.284 in</span></div>
+            <div class="spec"><span class="s-label">Exit dia.</span><span class="s-value">0.726 in</span></div>
+            <div class="spec"><span class="s-label">Area ratio</span><span class="s-value">6.52</span></div>
+            <div class="spec"><span class="s-label">Design thrust</span><span class="s-value">~35 N</span></div>
+            <div class="spec"><span class="s-label">Contour</span><span class="s-value">80% bell</span></div>
+            <div class="spec"><span class="s-label">Mass (resin)</span><span class="s-value">~0.026 lb</span></div>
+          </div>
           <div class="project-tags">
             <span class="tag">SolidWorks</span>
-            <span class="tag">FEA</span>
             <span class="tag">Nozzle Design</span>
-            <span class="tag">Arduino</span>
-            <span class="tag">Instrumentation</span>
+            <span class="tag">Equation-driven contour</span>
             <span class="tag">O-Ring Sealing</span>
+            <span class="tag">3D Printing (ABS resin)</span>
           </div>
           <div class="project-learned">
             <p class="learned-label">Where it stands</p>
             <p class="learned-text">
-              Currently in the design review phase, working through nozzle calculations
-              (specific impulse, thrust, exit velocity, area ratio) and drafting the CAD to mate
-              with the fixed adapter geometry. The test computer side needs to read a load cell,
-              fire an EMatch, and control a solenoid — all through a microcontroller I'm building
-              from scratch. Full FEA validation and test firing come later in the semester.
+              The initial CAD is finished and heading into a preliminary design review. Next comes
+              FEA to find where the nozzle needs more material — most likely the wall near the
+              throat — then printing and a test fire in the coming weeks. A clip of that fire goes
+              in the slot below once it's recorded.
             </p>
           </div>
         </div>
       </div>
 
-      <!-- PLACEHOLDER — BURPG -->
+      <!-- PROJECT 4: BURPG Machining Intro Project -->
+      <div class="project-card panel">
+        <span class="corner-tr"></span><span class="corner-bl"></span>
+        <div class="project-figure">
+          <span class="fig-tag">IMG-04</span>
+          <img
+            class="project-img"
+            src="mip-machinist-hammer.png"
+            alt="Two-piece machinist's hammer from BURPG's Machining Intro Project — turned aluminum handle threaded into a milled HDPE head"
+            onclick="openLightbox(this.src, this.alt)"
+            onerror="markNoImage(this)"
+          />
+          <div class="img-fallback">
+            <div class="fb-icon">[ ! ]</div>
+            <div class="fb-main">Signal Pending</div>
+            <div class="fb-sub">photo not yet uploaded</div>
+          </div>
+        </div>
+        <div class="project-body">
+          <p class="project-meta">BURPG · Jan 2026–Present <span class="status-chip">Leadership</span></p>
+          <h2 class="project-title">Machining Intro Project — Lead</h2>
+          <p class="project-desc">
+            I lead BURPG's Machining Intro Project, the team's onboarding path for hands-on
+            manufacturing, serving 100+ interested members. I organize the stock (6061-T6
+            aluminum and HDPE), sign-ups, and an educator meeting so instructors teach
+            consistently. New members machine a two-piece machinist's hammer — a 6061-T6
+            aluminum handle on the manual lathe and an HDPE head on the manual mill — ending in a
+            3/8"-16 threaded interface they cut and fit themselves. I run the machining hours at
+            EPIC, walking members through lathe and mill setups, DRO use, tolerancing, and safe
+            shop practice.
+          </p>
+          <div class="project-tags">
+            <span class="tag">Manual Lathe</span>
+            <span class="tag">Manual Mill</span>
+            <span class="tag">6061-T6 Aluminum</span>
+            <span class="tag">HDPE</span>
+            <span class="tag">Threading / Tapping</span>
+            <span class="tag">Instruction</span>
+          </div>
+          <div class="project-learned">
+            <p class="learned-label">What I learned</p>
+            <p class="learned-text">
+              Teaching a process is the fastest way to find the gaps in your own understanding.
+              Getting new members safe and confident on the machines — and keeping the project
+              running week to week — is a different skill than machining a part myself, and one
+              I've grown into.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- TEST-FIRE VIDEO PLACEHOLDER (HIP) -->
       <div class="project-card-placeholder">
-        <div class="placeholder-icon">🚀</div>
+        <div class="placeholder-icon">▶</div>
         <div class="placeholder-text">
-          <strong>BURPG — Liquid Nitrogen Rocket</strong>
-          <p>Coming soon — propulsion system work and member training at the BU Rocket Propulsion Group.</p>
+          <strong>HIP Nozzle — Test Fire Clip</strong>
+          <p>Coming soon — a video of the printed nozzle on the test stand will drop in here once the fire is recorded.</p>
         </div>
       </div>
 
@@ -666,9 +920,9 @@
   </section>
 
   <!-- CONTACT -->
-  <section id="contact">
+  <section id="contact" data-boot>
     <p class="section-label">Contact</p>
-    <p style="font-size:0.9rem; color:var(--steel); font-weight:300; margin-bottom:1.25rem; max-width:50ch;">
+    <p class="contact-intro">
       Open to internship opportunities in manufacturing, automotive, or infrastructure engineering for Summer 2027.
     </p>
     <div class="contact-row">
@@ -681,13 +935,16 @@
   </section>
 
   <!-- FOOTER -->
-  <footer>
+  <footer data-boot>
     Saul Santos Jimenez · Boston University · B.S. Mechanical Engineering, expected May 2029
   </footer>
+
   <!-- LIGHTBOX -->
   <div class="lightbox-overlay" id="lightbox" onclick="closeLightbox()">
     <span class="lightbox-close" onclick="closeLightbox()">&times;</span>
-    <img id="lightbox-img" src="" alt="" onclick="event.stopPropagation()" />
+    <div class="lightbox-frame" onclick="event.stopPropagation()">
+      <img id="lightbox-img" src="" alt="" />
+    </div>
   </div>
 
   <script>
@@ -699,8 +956,17 @@
     function closeLightbox() {
       document.getElementById('lightbox').classList.remove('active');
     }
+    // graceful fallback: if a project image fails to load, show the HUD "signal pending" panel
+    function markNoImage(img) {
+      var fig = img.closest('.project-figure');
+      if (fig) fig.classList.add('no-image');
+    }
     document.addEventListener('keydown', function(e) {
       if (e.key === 'Escape') closeLightbox();
+    });
+    // remove boot class after the intro so later reflows don't replay the slide-in
+    window.addEventListener('load', function () {
+      setTimeout(function () { document.body.classList.remove('boot'); }, 1400);
     });
   </script>
 
